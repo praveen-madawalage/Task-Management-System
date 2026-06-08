@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 
 const authRoutes = require('./routes/authRoutes');
+const { scheduleTokenCleanup } = require('./jobs/tokenCleanup');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -50,6 +51,9 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: 'Internal server error' });
 });
+
+// Background jobs
+scheduleTokenCleanup();
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT} [${process.env.NODE_ENV}]`);
