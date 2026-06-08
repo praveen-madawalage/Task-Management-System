@@ -42,7 +42,7 @@ const validatePassword = (plain, hash) => {
 
 const generateAccessToken = (user) => {
     return jwt.sign(
-        { userId: user.id, role: user.role },
+        { userId: user.id, role: user.role, mustResetPassword: !!user.must_reset_password },
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRES_IN }
     );
@@ -85,6 +85,19 @@ const deleteRefreshToken = async (token) => {
     await supabase.from('refresh_tokens').delete().eq('token_hash', tokenHash);
 };
 
+const deleteAllRefreshTokensForUser = async (userId) => {
+    await supabase.from('refresh_tokens').delete().eq('user_id', userId);
+};
+
+const deleteExpiredRefreshTokens = async () => {
+    const { error } = await supabase
+        .from('refresh_tokens')
+        .delete()
+        .lt('expires_at', new Date().toISOString());
+
+    if (error) throw new Error('Failed to delete expired refresh tokens');
+};
+
 const updatePassword = async (userId, newPassword) => {
     const salt = await bcrypt.genSalt(12);
     const password_hash = await bcrypt.hash(newPassword, salt);
@@ -95,6 +108,11 @@ const updatePassword = async (userId, newPassword) => {
         .eq('id', userId);
 
     if (error) throw new Error('Failed to update password');
+
+    // A password change must end every existing session, so all refresh tokens
+    // for this user are revoked. The caller is responsible for issuing a fresh
+    // token pair for the current session if it should stay logged in.
+    await deleteAllRefreshTokensForUser(userId);
 };
 
 module.exports = {
@@ -107,5 +125,7 @@ module.exports = {
     saveRefreshToken,
     findRefreshToken,
     deleteRefreshToken,
+    deleteAllRefreshTokensForUser,
+    deleteExpiredRefreshTokens,
     updatePassword,
 };

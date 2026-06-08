@@ -73,8 +73,11 @@ const refresh = async (req, res) => {
         return res.status(401).json({ error: 'Invalid refresh token' });
     }
 
+    // Rotation: consume the presented token immediately. It can only be used once,
+    // whether it turns out to be expired, valid, or replayed.
+    await authService.deleteRefreshToken(token);
+
     if (new Date() > new Date(stored.expires_at)) {
-        await authService.deleteRefreshToken(token);
         return res.status(401).json({ error: 'Refresh token expired, please log in again' });
     }
 
@@ -84,6 +87,10 @@ const refresh = async (req, res) => {
     }
 
     const accessToken = authService.generateAccessToken(user);
+    const newRefreshToken = authService.generateRefreshToken();
+    await authService.saveRefreshToken(user.id, newRefreshToken);
+
+    res.cookie(REFRESH_COOKIE, newRefreshToken, cookieOptions());
     res.json({ accessToken });
 };
 
@@ -111,7 +118,17 @@ const changePassword = async (req, res) => {
     }
 
     await authService.updatePassword(userId, newPassword);
-    res.json({ message: 'Password updated successfully' });
+
+    // updatePassword revoked every refresh token for this user. Re-establish the
+    // current session with a fresh pair: a new access token that no longer carries
+    // the reset flag, and a new refresh token. Other sessions stay logged out.
+    const tokenUser = { id: userId, role: req.user.role, must_reset_password: false };
+    const accessToken = authService.generateAccessToken(tokenUser);
+    const refreshToken = authService.generateRefreshToken();
+    await authService.saveRefreshToken(userId, refreshToken);
+
+    res.cookie(REFRESH_COOKIE, refreshToken, cookieOptions());
+    res.json({ message: 'Password updated successfully', accessToken });
 };
 
 module.exports = { login, logout, refresh, changePassword };

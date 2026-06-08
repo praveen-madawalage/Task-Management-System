@@ -31,4 +31,17 @@ const requireRole = (...roles) => (req, res, next) => {
     next();
 };
 
-module.exports = { authenticate, requireRole };
+// Blocks users who still owe a mandatory first-login password reset. Apply this
+// after `authenticate` on every protected feature route — but NOT on the
+// change-password route, which is how they clear the flag.
+const requirePasswordReset = (req, res, next) => {
+    if (req.user && req.user.mustResetPassword) {
+        return res.status(403).json({
+            error: 'Password reset required before accessing the system',
+            code: 'PASSWORD_RESET_REQUIRED',
+        });
+    }
+    next();
+};
+
+module.exports = { authenticate, requireRole, requirePasswordReset };
