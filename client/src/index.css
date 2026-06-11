@@ -1,0 +1,4 @@
+/* MUI's CssBaseline handles resets; keep this minimal. */
+:root {
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+}
