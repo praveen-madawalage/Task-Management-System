@@ -89,6 +89,29 @@ export default function TasksSection({ project }: { project: Project }) {
     for (const id of current.filter((x) => !next.includes(x))) await labelsApi.removeLabelFromTask(taskId, id);
   };
 
+  // Quick inline add from a card: reuse an existing same-named project label or
+  // create a new one, then tag the task with it.
+  const handleAddLabel = async (taskId: string, name: string, color: string) => {
+    try {
+      const existing = (projectLabels ?? []).find((l) => l.name.toLowerCase() === name.toLowerCase());
+      const labelId = existing ? existing.id : (await labelsApi.createLabel(project.id, { name, color })).id;
+      await labelsApi.addLabelToTask(taskId, labelId);
+      qc.invalidateQueries({ queryKey: ['labels', project.id] });
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+    } catch (err) {
+      setSnack({ open: true, message: extractError(err), severity: 'error' });
+    }
+  };
+
+  const handleRemoveLabel = async (taskId: string, labelId: string) => {
+    try {
+      await labelsApi.removeLabelFromTask(taskId, labelId);
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+    } catch (err) {
+      setSnack({ open: true, message: extractError(err), severity: 'error' });
+    }
+  };
+
   const handleSubmit = async (values: TaskFormValues) => {
     setFormError(null);
     const dueDate = values.dueDate ? new Date(values.dueDate).toISOString() : null;
@@ -185,7 +208,10 @@ export default function TasksSection({ project }: { project: Project }) {
         <TaskBoard
           tasks={tasks ?? []}
           canChangeStatus={canChangeStatus}
+          canManageLabels={canManage}
           onStatusChange={handleStatusChange}
+          onAddLabel={handleAddLabel}
+          onRemoveLabel={handleRemoveLabel}
           onOpen={handleOpen}
         />
       ) : (

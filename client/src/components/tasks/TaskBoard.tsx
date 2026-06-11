@@ -8,11 +8,22 @@ import TaskCard from './TaskCard';
 interface TaskBoardProps {
   tasks: Task[];
   canChangeStatus: (task: Task) => boolean;
+  canManageLabels: boolean;
   onStatusChange: (taskId: string, status: TaskStatus) => void;
+  onAddLabel: (taskId: string, name: string, color: string) => void;
+  onRemoveLabel: (taskId: string, labelId: string) => void;
   onOpen: (task: Task) => void;
 }
 
-export default function TaskBoard({ tasks, canChangeStatus, onStatusChange, onOpen }: TaskBoardProps) {
+export default function TaskBoard({
+  tasks,
+  canChangeStatus,
+  canManageLabels,
+  onStatusChange,
+  onAddLabel,
+  onRemoveLabel,
+  onOpen,
+}: TaskBoardProps) {
   const byStatus = (s: TaskStatus) => tasks.filter((t) => t.status === s);
 
   const onDragEnd = (result: DropResult) => {
@@ -53,7 +64,13 @@ export default function TaskBoard({ tasks, canChangeStatus, onStatusChange, onOp
                     >
                       {(prov) => (
                         <Box ref={prov.innerRef} {...prov.draggableProps} {...prov.dragHandleProps}>
-                          <TaskCard task={task} onClick={() => onOpen(task)} />
+                          <TaskCard
+                            task={task}
+                            canManageLabels={canManageLabels}
+                            onAddLabel={onAddLabel}
+                            onRemoveLabel={onRemoveLabel}
+                            onClick={() => onOpen(task)}
+                          />
                         </Box>
                       )}
                     </Draggable>

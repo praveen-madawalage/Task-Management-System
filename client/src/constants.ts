@@ -22,6 +22,18 @@ export const PRIORITY_COLOR: Record<TaskPriority, 'default' | 'warning' | 'error
   high: 'error',
 };
 
+// Preset swatches for the quick "add label" control on task cards.
+export const PRESET_LABEL_COLORS = [
+  '#E11D48',
+  '#F59E0B',
+  '#10B981',
+  '#3B82F6',
+  '#8B5CF6',
+  '#EC4899',
+  '#0EA5E9',
+  '#6B7280',
+];
+
 export const STATUSES: TaskStatus[] = ['todo', 'in_progress', 'completed'];
 
 export const STATUS_LABELS: Record<TaskStatus, string> = {
