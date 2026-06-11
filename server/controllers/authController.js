@@ -131,4 +131,12 @@ const changePassword = async (req, res) => {
     res.json({ message: 'Password updated successfully', accessToken });
 };
 
-module.exports = { login, logout, refresh, changePassword };
+const me = async (req, res) => {
+    const user = await authService.findUserById(req.user.userId);
+    if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({ user });
+};
+
+module.exports = { login, logout, refresh, changePassword, me };

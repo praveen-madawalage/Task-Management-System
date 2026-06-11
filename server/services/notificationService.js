@@ -37,6 +37,59 @@ const notify = async (userId, type, message, taskId = null) => {
     return data;
 };
 
+// ---- REST: history + read state ----
+
+const listForUser = async (userId, { unreadOnly, limit, offset } = {}) => {
+    let query = supabase
+        .from('notifications')
+        .select(NOTIFICATION_FIELDS)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+    if (unreadOnly) query = query.eq('is_read', false);
+    if (limit) query = query.range(offset || 0, (offset || 0) + limit - 1);
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+};
+
+const getUnreadCount = async (userId) => {
+    const { count, error } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_read', false);
+
+    if (error) throw error;
+    return count || 0;
+};
+
+// Marks one notification read, scoped to its owner. Returns the row, or null if
+// it doesn't exist or belongs to someone else.
+const markRead = async (userId, id) => {
+    const { data, error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', id)
+        .eq('user_id', userId)
+        .select(NOTIFICATION_FIELDS)
+        .maybeSingle();
+
+    if (error) throw error;
+    return data;
+};
+
+const markAllRead = async (userId) => {
+    const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', userId)
+        .eq('is_read', false);
+
+    if (error) throw error;
+};
+
 // On (re)connection, push every not-yet-delivered notification, then mark them
 // delivered.
 const deliverPending = async (userId) => {
@@ -53,4 +106,12 @@ const deliverPending = async (userId) => {
     await markDelivered(data.map((n) => n.id));
 };
 
-module.exports = { notify, deliverPending, markDelivered };
+module.exports = {
+    notify,
+    deliverPending,
+    markDelivered,
+    listForUser,
+    getUnreadCount,
+    markRead,
+    markAllRead,
+};

@@ -161,6 +161,7 @@ const definition = {
         { name: 'Labels', description: 'Per-project labels and task tagging' },
         { name: 'Comments', description: 'Task comments' },
         { name: 'Attachments', description: 'Task file attachments (Supabase Storage)' },
+        { name: 'Notifications', description: 'Notification history and read state' },
     ],
 };
 

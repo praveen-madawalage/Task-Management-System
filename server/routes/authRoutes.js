@@ -1,7 +1,7 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const { body } = require('express-validator');
-const { login, logout, refresh, changePassword } = require('../controllers/authController');
+const { login, logout, refresh, changePassword, me } = require('../controllers/authController');
 const { authenticate } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -120,9 +120,24 @@ const changePasswordValidation = [
  *       400: { $ref: '#/components/responses/ValidationError' }
  *       401: { description: Current password incorrect or not authenticated }
  */
+/**
+ * @openapi
+ * /api/auth/me:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Get the current authenticated user's profile
+ *     responses:
+ *       200:
+ *         description: Current user
+ *         content:
+ *           application/json:
+ *             schema: { type: object, properties: { user: { $ref: '#/components/schemas/User' } } }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ */
 router.post('/login', loginLimiter, loginValidation, login);
 router.post('/logout', authenticate, logout);
 router.post('/refresh', refresh);
 router.post('/change-password', authenticate, changePasswordValidation, changePassword);
+router.get('/me', authenticate, me);
 
 module.exports = router;

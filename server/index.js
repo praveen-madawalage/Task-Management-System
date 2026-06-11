@@ -17,6 +17,7 @@ const taskRoutes = require('./routes/taskRoutes');
 const labelRoutes = require('./routes/labelRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 const attachmentRoutes = require('./routes/attachmentRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 const { scheduleTokenCleanup } = require('./jobs/tokenCleanup');
 const { scheduleDeadlineReminders } = require('./jobs/deadlineReminders');
 const { initSocket } = require('./sockets/io');
@@ -57,6 +58,7 @@ app.use('/api', commentRoutes);
 app.use('/api', attachmentRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // API documentation (Swagger UI + raw OpenAPI spec)
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
