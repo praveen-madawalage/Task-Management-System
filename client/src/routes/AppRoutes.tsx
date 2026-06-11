@@ -5,6 +5,7 @@ import LoginPage from '../pages/LoginPage';
 import ChangePasswordPage from '../pages/ChangePasswordPage';
 import DashboardPage from '../pages/DashboardPage';
 import ProjectsPage from '../pages/ProjectsPage';
+import ProjectDetailPage from '../pages/ProjectDetailPage';
 import TasksPage from '../pages/TasksPage';
 import UsersPage from '../pages/UsersPage';
 
@@ -20,6 +21,7 @@ export default function AppRoutes() {
         <Route element={<AppLayout />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/projects/:id" element={<ProjectDetailPage />} />
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/users" element={<UsersPage />} />
         </Route>
