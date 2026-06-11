@@ -72,6 +72,20 @@ const listUsers = async ({ search, role, isActive }) => {
     return data;
 };
 
+// Minimal list of users eligible to be task assignees. Only active collaborators
+// are assignable — admins and project managers are never task assignees.
+const listAssignable = async () => {
+    const { data, error } = await supabase
+        .from('users')
+        .select('id, name, email')
+        .eq('is_active', true)
+        .eq('role', 'collaborator')
+        .order('name', { ascending: true });
+
+    if (error) throw error;
+    return data;
+};
+
 const findById = async (id) => {
     const { data, error } = await supabase
         .from('users')
@@ -112,6 +126,7 @@ module.exports = {
     generateTempPassword,
     createUser,
     listUsers,
+    listAssignable,
     findById,
     updateUser,
     setActive,

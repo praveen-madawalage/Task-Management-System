@@ -49,6 +49,16 @@ const createUser = async (req, res) => {
     });
 };
 
+const listAssignable = async (req, res) => {
+    try {
+        const users = await userService.listAssignable();
+        res.json({ users });
+    } catch (err) {
+        console.error('List assignable users failed:', err.message);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+};
+
 const listUsers = async (req, res) => {
     if (failOnValidation(req, res)) return;
 
@@ -112,4 +122,4 @@ const setUserStatus = async (req, res) => {
     }
 };
 
-module.exports = { createUser, listUsers, getUser, updateUser, setUserStatus };
+module.exports = { createUser, listUsers, listAssignable, getUser, updateUser, setUserStatus };

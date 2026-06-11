@@ -5,6 +5,9 @@ import type { CreateUserInput, UpdateUserInput, UserListParams } from '../api/us
 export const useUsers = (params: UserListParams) =>
   useQuery({ queryKey: ['users', params], queryFn: () => usersApi.listUsers(params) });
 
+export const useAssignableUsers = () =>
+  useQuery({ queryKey: ['users', 'assignable'], queryFn: usersApi.listAssignableUsers });
+
 export const useCreateUser = () => {
   const qc = useQueryClient();
   return useMutation({

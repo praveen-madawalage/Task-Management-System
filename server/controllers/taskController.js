@@ -21,13 +21,13 @@ const isManagerOrAdmin = (role) => role === 'admin' || role === 'project_manager
 const canManageProject = (req, project) =>
     req.user.role === 'admin' || project.created_by === req.user.userId;
 
-// Validates that every id refers to an existing, active user. Returns an array
-// of the ids that are invalid (empty array = all good).
+// Validates that every id refers to an existing, active collaborator. Admins and
+// project managers are not assignable. Returns the ids that are invalid.
 const findInvalidAssignees = async (userIds) => {
     const invalid = [];
     for (const id of userIds) {
         const user = await userService.findById(id);
-        if (!user || !user.is_active) invalid.push(id);
+        if (!user || !user.is_active || user.role !== 'collaborator') invalid.push(id);
     }
     return invalid;
 };
@@ -90,7 +90,7 @@ const createTask = async (req, res) => {
         if (Array.isArray(assigneeIds) && assigneeIds.length > 0) {
             const invalid = await findInvalidAssignees(assigneeIds);
             if (invalid.length > 0) {
-                return res.status(400).json({ error: 'Some assignees do not exist or are inactive', invalid });
+                return res.status(400).json({ error: 'Assignees must be active collaborators', invalid });
             }
         }
 
@@ -283,8 +283,8 @@ const addAssignee = async (req, res) => {
         if (!task) return;
 
         const user = await userService.findById(userId);
-        if (!user || !user.is_active) {
-            return res.status(400).json({ error: 'User does not exist or is inactive' });
+        if (!user || !user.is_active || user.role !== 'collaborator') {
+            return res.status(400).json({ error: 'Only active collaborators can be assigned to tasks' });
         }
 
         if (await taskService.isAssignee(task.id, userId)) {

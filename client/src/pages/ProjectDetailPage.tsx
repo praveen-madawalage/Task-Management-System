@@ -1,12 +1,21 @@
-import { Alert, Box, Button, CircularProgress, Divider, Paper, Typography } from '@mui/material';
+import { useState } from 'react';
+import { Alert, Box, Button, CircularProgress, Paper, Stack, Typography } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LabelIcon from '@mui/icons-material/Label';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useProject } from '../hooks/useProjects';
+import { useAuth } from '../context/AuthContext';
+import TasksSection from '../components/tasks/TasksSection';
+import ManageLabelsDialog from '../components/labels/ManageLabelsDialog';
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { data: project, isLoading, isError } = useProject(id);
+  const [labelsOpen, setLabelsOpen] = useState(false);
+
+  const canManage = project != null && (user?.role === 'admin' || project.created_by === user?.id);
 
   if (isLoading) {
     return (
@@ -34,22 +43,27 @@ export default function ProjectDetailPage() {
       </Button>
 
       <Paper sx={{ p: 3 }}>
-        <Typography variant="h4" gutterBottom>
-          {project.title}
-        </Typography>
+        <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Typography variant="h4" gutterBottom>
+            {project.title}
+          </Typography>
+          {canManage && (
+            <Button startIcon={<LabelIcon />} onClick={() => setLabelsOpen(true)}>
+              Manage labels
+            </Button>
+          )}
+        </Stack>
         <Typography color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
           {project.description || 'No description'}
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
           Created {new Date(project.created_at).toLocaleString()}
         </Typography>
-
-        <Divider sx={{ my: 3 }} />
-
-        <Typography variant="h6" color="text.secondary">
-          Tasks — coming soon
-        </Typography>
       </Paper>
+
+      <TasksSection project={project} />
+
+      <ManageLabelsDialog open={labelsOpen} projectId={project.id} onClose={() => setLabelsOpen(false)} />
     </Box>
   );
 }

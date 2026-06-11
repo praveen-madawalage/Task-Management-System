@@ -10,6 +10,18 @@ export const ROLE_LABELS: Record<Role, string> = {
 
 export const PRIORITIES: TaskPriority[] = ['low', 'medium', 'high'];
 
+export const PRIORITY_LABELS: Record<TaskPriority, string> = {
+  low: 'Low',
+  medium: 'Medium',
+  high: 'High',
+};
+
+export const PRIORITY_COLOR: Record<TaskPriority, 'default' | 'warning' | 'error'> = {
+  low: 'default',
+  medium: 'warning',
+  high: 'error',
+};
+
 export const STATUSES: TaskStatus[] = ['todo', 'in_progress', 'completed'];
 
 export const STATUS_LABELS: Record<TaskStatus, string> = {

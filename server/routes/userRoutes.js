@@ -3,6 +3,7 @@ const { body, param, query } = require('express-validator');
 const {
     createUser,
     listUsers,
+    listAssignable,
     getUser,
     updateUser,
     setUserStatus,
@@ -13,8 +14,41 @@ const router = express.Router();
 
 const ROLES = ['admin', 'project_manager', 'collaborator'];
 
-// Every user-management route is admin-only and requires the admin to have
-// completed any mandatory password reset first.
+/**
+ * @openapi
+ * /api/users/assignable:
+ *   get:
+ *     tags: [Users]
+ *     summary: List active collaborators eligible as task assignees (admin or project manager)
+ *     responses:
+ *       200:
+ *         description: Minimal active-user list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id: { type: string, format: uuid }
+ *                       name: { type: string }
+ *                       email: { type: string }
+ *       403: { $ref: '#/components/responses/Forbidden' }
+ */
+// Defined before the admin-only guard below so project managers can reach it.
+router.get(
+    '/assignable',
+    authenticate,
+    requirePasswordReset,
+    requireRole('admin', 'project_manager'),
+    listAssignable,
+);
+
+// Every other user-management route is admin-only and requires the admin to
+// have completed any mandatory password reset first.
 router.use(authenticate, requirePasswordReset, requireRole('admin'));
 
 const createValidation = [

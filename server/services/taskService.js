@@ -5,6 +5,20 @@ const TASK_FIELDS =
 
 const SORTABLE_COLUMNS = ['due_date', 'priority', 'created_at', 'status'];
 
+// Task fields plus nested assignees and labels, so list responses can render
+// cards without an extra request per task.
+const TASK_SELECT_WITH_RELATIONS = `${TASK_FIELDS}, task_assignments ( users ( id, name, email, role ) ), task_labels ( labels ( id, project_id, created_by, name, color, created_at ) )`;
+
+// Flattens the nested join rows into clean `assignees` / `labels` arrays.
+const mapTaskRow = (row) => {
+    const { task_assignments, task_labels, ...task } = row;
+    return {
+        ...task,
+        assignees: (task_assignments || []).map((a) => a.users),
+        labels: (task_labels || []).map((l) => l.labels),
+    };
+};
+
 const createTask = async ({ projectId, createdBy, title, description, priority, status, dueDate }) => {
     const insert = { project_id: projectId, created_by: createdBy, title };
     if (description !== undefined) insert.description = description;
@@ -54,7 +68,7 @@ const listTasks = async ({ projectId, status, priority, assigneeId, search, sort
 };
 
 const runTaskQuery = async ({ taskIds, projectId, status, priority, search, sortColumn, ascending }) => {
-    let query = supabase.from('tasks').select(TASK_FIELDS);
+    let query = supabase.from('tasks').select(TASK_SELECT_WITH_RELATIONS);
 
     if (taskIds) query = query.in('id', taskIds);
     if (projectId) query = query.eq('project_id', projectId);
@@ -71,7 +85,7 @@ const runTaskQuery = async ({ taskIds, projectId, status, priority, search, sort
 
     const { data, error } = await query;
     if (error) throw error;
-    return data;
+    return (data || []).map(mapTaskRow);
 };
 
 const updateTask = async (id, fields) => {
