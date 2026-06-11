@@ -14,6 +14,7 @@ import {
 import { Link as RouterLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import RoleGate from '../RoleGate';
+import NotificationBell from '../NotificationBell';
 
 export default function AppLayout() {
   const { user, logout } = useAuth();
@@ -49,6 +50,7 @@ export default function AppLayout() {
               </Button>
             </RoleGate>
           </Box>
+          <NotificationBell />
           <IconButton color="inherit" onClick={(e) => setAnchor(e.currentTarget)} size="small">
             <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.dark' }}>
               {user?.name?.charAt(0).toUpperCase()}

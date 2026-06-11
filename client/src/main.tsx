@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { theme } from './theme';
 import { AuthProvider } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
 import AppRoutes from './routes/AppRoutes';
 import './index.css';
 
@@ -21,7 +22,9 @@ createRoot(document.getElementById('root')!).render(
         <CssBaseline />
         <BrowserRouter>
           <AuthProvider>
-            <AppRoutes />
+            <SocketProvider>
+              <AppRoutes />
+            </SocketProvider>
           </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>

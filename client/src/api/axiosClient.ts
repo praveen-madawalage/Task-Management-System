@@ -13,6 +13,7 @@ let accessToken: string | null = null;
 export const setAccessToken = (token: string | null) => {
   accessToken = token;
 };
+export const getAccessToken = () => accessToken;
 
 // Called when a refresh ultimately fails, so AuthContext can clear state.
 let onLogout: (() => void) | null = null;
