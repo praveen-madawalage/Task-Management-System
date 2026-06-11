@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -9,7 +10,11 @@ const rateLimit = require('express-rate-limit');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const projectRoutes = require('./routes/projectRoutes');
+const taskRoutes = require('./routes/taskRoutes');
+const labelRoutes = require('./routes/labelRoutes');
 const { scheduleTokenCleanup } = require('./jobs/tokenCleanup');
+const { scheduleDeadlineReminders } = require('./jobs/deadlineReminders');
+const { initSocket } = require('./sockets/io');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -40,8 +45,11 @@ app.use(cookieParser());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+// Label routes own /projects/:id/labels, /labels/:id, and /tasks/:id/labels.
+// Mounted before projects/tasks so those specific sub-paths match here first.
+app.use('/api', labelRoutes);
 app.use('/api/projects', projectRoutes);
-// app.use('/api/tasks', taskRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -54,10 +62,15 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Internal server error' });
 });
 
+// Wrap Express in an HTTP server so REST and WebSockets share the same port.
+const server = http.createServer(app);
+initSocket(server);
+
 // Background jobs
 scheduleTokenCleanup();
+scheduleDeadlineReminders();
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on port ${PORT} [${process.env.NODE_ENV}]`);
 });
 

@@ -3,10 +3,10 @@
 A full-stack task management application that lets teams create, assign, and track
 tasks collaboratively in real time. Built for INTE 21323.
 
-> **Current status:** Backend is at the authentication stage — login, logout, JWT
-> refresh (with rotation), and mandatory first-login password reset are implemented.
-> User-management, project, task, label, and real-time notification modules, the
-> Swagger docs, and the React frontend are not built yet.
+> **Current status:** Backend API is largely in place — authentication (login,
+> logout, JWT refresh with rotation, mandatory first-login reset), user management,
+> projects, tasks, labels, and real-time notifications (Socket.IO) are implemented.
+> The Swagger docs and the React frontend are not built yet.
 
 ## Project Structure
 
@@ -40,7 +40,7 @@ task-management-system/
 - **helmet** / **cors** / **cookie-parser** — Security & request middleware
 - **express-rate-limit** — Global + per-route (login) rate limiting
 - **node-cron** — Scheduled jobs (expired refresh-token cleanup)
-- **socket.io** — Real-time communication *(installed; not yet wired up)*
+- **socket.io** — Real-time notifications (JWT-authenticated, per-user rooms)
 - **swagger-jsdoc** / **swagger-ui-express** — API docs *(installed; not yet wired up)*
 - **dotenv** — Environment configuration
 
