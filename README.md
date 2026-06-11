@@ -5,8 +5,8 @@ tasks collaboratively in real time. Built for INTE 21323.
 
 > **Current status:** Backend API is largely in place — authentication (login,
 > logout, JWT refresh with rotation, mandatory first-login reset), user management,
-> projects, tasks, labels, and real-time notifications (Socket.IO) are implemented.
-> The Swagger docs and the React frontend are not built yet.
+> projects, tasks, labels, real-time notifications (Socket.IO), and interactive
+> Swagger API docs are implemented. The React frontend is not built yet.
 
 ## Project Structure
 
@@ -41,7 +41,7 @@ task-management-system/
 - **express-rate-limit** — Global + per-route (login) rate limiting
 - **node-cron** — Scheduled jobs (expired refresh-token cleanup)
 - **socket.io** — Real-time notifications (JWT-authenticated, per-user rooms)
-- **swagger-jsdoc** / **swagger-ui-express** — API docs *(installed; not yet wired up)*
+- **swagger-jsdoc** / **swagger-ui-express** — Interactive API docs at `/api/docs`
 - **dotenv** — Environment configuration
 
 ### Frontend
@@ -90,7 +90,14 @@ Auth endpoints (base path `/api/auth`):
 | POST   | `/logout`          | Bearer      | Revoke the current refresh token and clear the cookie.   |
 | POST   | `/change-password` | Bearer      | Change password; revokes all other sessions and clears the mandatory-reset flag. |
 
-> Full Swagger/OpenAPI documentation is planned but not yet wired up.
+### Interactive API docs
+
+With the server running, open **`http://localhost:8000/api/docs`** for the full
+Swagger UI (try endpoints in-browser). The raw OpenAPI spec is at
+`http://localhost:8000/api/docs.json`.
+
+To authorize protected endpoints in Swagger UI: call `POST /api/auth/login`, copy
+the `accessToken`, click **Authorize**, and paste it.
 
 ## Team Member Contributions
 

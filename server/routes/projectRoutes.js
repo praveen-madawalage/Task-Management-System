@@ -29,6 +29,84 @@ const idValidation = [param('id').isUUID().withMessage('Invalid project id')];
 
 // Creators are project managers (or admins). Ownership for update/delete is
 // enforced in the controller (creator-or-admin); collaborators are read-only.
+/**
+ * @openapi
+ * /api/projects:
+ *   post:
+ *     tags: [Projects]
+ *     summary: Create a project (project manager or admin)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [title]
+ *             properties:
+ *               title: { type: string }
+ *               description: { type: string }
+ *     responses:
+ *       201:
+ *         description: Project created
+ *         content:
+ *           application/json:
+ *             schema: { type: object, properties: { project: { $ref: '#/components/schemas/Project' } } }
+ *       400: { $ref: '#/components/responses/ValidationError' }
+ *       403: { $ref: '#/components/responses/Forbidden' }
+ *   get:
+ *     tags: [Projects]
+ *     summary: List projects (admins/PMs see all; collaborators see projects with a task assigned to them)
+ *     responses:
+ *       200:
+ *         description: List of projects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 projects: { type: array, items: { $ref: '#/components/schemas/Project' } }
+ * /api/projects/{id}:
+ *   get:
+ *     tags: [Projects]
+ *     summary: Get a project by id
+ *     parameters: [ { $ref: '#/components/parameters/IdPath' } ]
+ *     responses:
+ *       200:
+ *         description: Project
+ *         content:
+ *           application/json:
+ *             schema: { type: object, properties: { project: { $ref: '#/components/schemas/Project' } } }
+ *       403: { $ref: '#/components/responses/Forbidden' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *   patch:
+ *     tags: [Projects]
+ *     summary: Update a project (creator or admin)
+ *     parameters: [ { $ref: '#/components/parameters/IdPath' } ]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title: { type: string }
+ *               description: { type: string }
+ *     responses:
+ *       200:
+ *         description: Updated project
+ *         content:
+ *           application/json:
+ *             schema: { type: object, properties: { project: { $ref: '#/components/schemas/Project' } } }
+ *       403: { $ref: '#/components/responses/Forbidden' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *   delete:
+ *     tags: [Projects]
+ *     summary: Delete a project (creator or admin); cascades to tasks, labels, comments
+ *     parameters: [ { $ref: '#/components/parameters/IdPath' } ]
+ *     responses:
+ *       200: { description: Project deleted }
+ *       403: { $ref: '#/components/responses/Forbidden' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ */
 router.post('/', requireRole('admin', 'project_manager'), createValidation, createProject);
 router.get('/', listProjects);
 router.get('/:id', idValidation, getProject);

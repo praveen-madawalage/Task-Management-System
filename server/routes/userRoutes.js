@@ -46,6 +46,103 @@ const listValidation = [
 
 const idValidation = [param('id').isUUID().withMessage('Invalid user id')];
 
+/**
+ * @openapi
+ * /api/users:
+ *   post:
+ *     tags: [Users]
+ *     summary: Create a user (sends an onboarding email with a temporary password)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, email, role]
+ *             properties:
+ *               name: { type: string }
+ *               email: { type: string, format: email }
+ *               role: { type: string, enum: [admin, project_manager, collaborator] }
+ *     responses:
+ *       201:
+ *         description: User created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user: { $ref: '#/components/schemas/User' }
+ *                 emailSent: { type: boolean }
+ *       400: { $ref: '#/components/responses/ValidationError' }
+ *       403: { $ref: '#/components/responses/Forbidden' }
+ *       409: { description: A user with this email already exists }
+ *   get:
+ *     tags: [Users]
+ *     summary: List users (searchable / filterable)
+ *     parameters:
+ *       - { in: query, name: search, schema: { type: string } }
+ *       - { in: query, name: role, schema: { type: string, enum: [admin, project_manager, collaborator] } }
+ *       - { in: query, name: isActive, schema: { type: string, enum: ['true', 'false'] } }
+ *     responses:
+ *       200:
+ *         description: List of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 users: { type: array, items: { $ref: '#/components/schemas/User' } }
+ *       403: { $ref: '#/components/responses/Forbidden' }
+ * /api/users/{id}:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get a user by id
+ *     parameters: [ { $ref: '#/components/parameters/IdPath' } ]
+ *     responses:
+ *       200:
+ *         description: User
+ *         content:
+ *           application/json:
+ *             schema: { type: object, properties: { user: { $ref: '#/components/schemas/User' } } }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ *   patch:
+ *     tags: [Users]
+ *     summary: Update a user's name and/or role
+ *     parameters: [ { $ref: '#/components/parameters/IdPath' } ]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name: { type: string }
+ *               role: { type: string, enum: [admin, project_manager, collaborator] }
+ *     responses:
+ *       200:
+ *         description: Updated user
+ *         content:
+ *           application/json:
+ *             schema: { type: object, properties: { user: { $ref: '#/components/schemas/User' } } }
+ *       400: { $ref: '#/components/responses/ValidationError' }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ * /api/users/{id}/status:
+ *   patch:
+ *     tags: [Users]
+ *     summary: Activate or deactivate a user
+ *     parameters: [ { $ref: '#/components/parameters/IdPath' } ]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { type: object, required: [isActive], properties: { isActive: { type: boolean } } }
+ *     responses:
+ *       200:
+ *         description: Updated user
+ *         content:
+ *           application/json:
+ *             schema: { type: object, properties: { user: { $ref: '#/components/schemas/User' } } }
+ *       404: { $ref: '#/components/responses/NotFound' }
+ */
 router.post('/', createValidation, createUser);
 router.get('/', listValidation, listUsers);
 router.get('/:id', idValidation, getUser);

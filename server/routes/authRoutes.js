@@ -37,6 +37,89 @@ const changePasswordValidation = [
         .matches(/[^A-Za-z0-9]/).withMessage('Password must contain at least one special character'),
 ];
 
+/**
+ * @openapi
+ * /api/auth/login:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Log in with email and password
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email: { type: string, format: email }
+ *               password: { type: string, format: password }
+ *     responses:
+ *       200:
+ *         description: Authenticated; returns an access token and sets the refresh-token cookie.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken: { type: string }
+ *                 user: { $ref: '#/components/schemas/User' }
+ *       400: { $ref: '#/components/responses/ValidationError' }
+ *       401: { description: Invalid credentials }
+ *       403: { description: Account deactivated }
+ *       429: { description: Too many login attempts }
+ * /api/auth/refresh:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Rotate the refresh token and issue a new access token
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: New access token issued; the refresh-token cookie is rotated.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken: { type: string }
+ *       401: { description: Missing, invalid, or expired refresh token }
+ * /api/auth/logout:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Revoke the current refresh token and clear the cookie
+ *     responses:
+ *       200: { description: Logged out }
+ *       401: { $ref: '#/components/responses/Unauthorized' }
+ * /api/auth/change-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Change password (clears the mandatory-reset flag, revokes other sessions)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [currentPassword, newPassword]
+ *             properties:
+ *               currentPassword: { type: string }
+ *               newPassword:
+ *                 type: string
+ *                 description: Min 8 chars with at least one uppercase letter, one number, and one special character.
+ *     responses:
+ *       200:
+ *         description: Password updated; returns a fresh access token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *                 accessToken: { type: string }
+ *       400: { $ref: '#/components/responses/ValidationError' }
+ *       401: { description: Current password incorrect or not authenticated }
+ */
 router.post('/login', loginLimiter, loginValidation, login);
 router.post('/logout', authenticate, logout);
 router.post('/refresh', refresh);
