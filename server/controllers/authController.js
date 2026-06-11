@@ -45,7 +45,8 @@ const login = async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
-            mustResetPassword: user.must_reset_password,
+            is_active: user.is_active,
+            must_reset_password: user.must_reset_password,
         },
     });
 };
