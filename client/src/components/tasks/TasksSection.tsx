@@ -33,6 +33,7 @@ import TaskFormDialog from './TaskFormDialog';
 import type { TaskFormValues } from './TaskFormDialog';
 import TaskBoard from './TaskBoard';
 import TaskTable from './TaskTable';
+import TaskDetailDialog from './TaskDetailDialog';
 
 type ViewMode = 'board' | 'table';
 
@@ -58,7 +59,11 @@ export default function TasksSection({ project }: { project: Project }) {
   const [editing, setEditing] = useState<Task | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
+  const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
   const [snack, setSnack] = useState<SnackState>({ open: false, message: '', severity: 'success' });
+
+  // Derive the open detail task from the live list so it reflects edits/drags.
+  const detailTask = (tasks ?? []).find((t) => t.id === detailTaskId) ?? null;
 
   const canManage = user?.role === 'admin' || project.created_by === user?.id;
   const canChangeStatus = (task: Task) =>
@@ -74,9 +79,9 @@ export default function TasksSection({ project }: { project: Project }) {
     setFormError(null);
     setFormOpen(true);
   };
-  // Managers open the editor when a task is clicked; others just view.
+  // Clicking a task opens its detail view (comments, attachments) for everyone.
   const handleOpen = (task: Task) => {
-    if (canManage) openEdit(task);
+    setDetailTaskId(task.id);
   };
 
   const reconcileAssignees = async (taskId: string, current: string[], next: string[]) => {
@@ -228,6 +233,18 @@ export default function TasksSection({ project }: { project: Project }) {
           onOpen={handleOpen}
         />
       )}
+
+      <TaskDetailDialog
+        open={detailTask != null}
+        task={detailTask}
+        canManage={canManage}
+        currentUserId={user?.id}
+        onEdit={(t) => {
+          setDetailTaskId(null);
+          openEdit(t);
+        }}
+        onClose={() => setDetailTaskId(null)}
+      />
 
       <TaskFormDialog
         open={formOpen}
