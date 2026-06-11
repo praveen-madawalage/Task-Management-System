@@ -3,10 +3,11 @@
 A full-stack task management application that lets teams create, assign, and track
 tasks collaboratively in real time. Built for INTE 21323.
 
-> **Current status:** Backend API is largely in place — authentication (login,
+> **Current status:** Backend API is feature-complete — authentication (login,
 > logout, JWT refresh with rotation, mandatory first-login reset), user management,
-> projects, tasks, labels, real-time notifications (Socket.IO), and interactive
-> Swagger API docs are implemented. The React frontend is not built yet.
+> projects, tasks, labels, comments, file attachments (Supabase Storage), real-time
+> notifications (Socket.IO), and interactive Swagger API docs are implemented. The
+> React frontend is not built yet.
 
 ## Project Structure
 

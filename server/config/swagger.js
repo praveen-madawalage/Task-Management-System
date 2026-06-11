@@ -107,6 +107,30 @@ const definition = {
                     created_at: { type: 'string', format: 'date-time' },
                 },
             },
+            Comment: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string', format: 'uuid' },
+                    task_id: { type: 'string', format: 'uuid' },
+                    user_id: { type: 'string', format: 'uuid' },
+                    content: { type: 'string' },
+                    created_at: { type: 'string', format: 'date-time' },
+                    author: { $ref: '#/components/schemas/User' },
+                },
+            },
+            Attachment: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string', format: 'uuid' },
+                    task_id: { type: 'string', format: 'uuid' },
+                    user_id: { type: 'string', format: 'uuid' },
+                    file_name: { type: 'string' },
+                    file_url: { type: 'string' },
+                    file_size: { type: 'integer' },
+                    created_at: { type: 'string', format: 'date-time' },
+                    uploader: { $ref: '#/components/schemas/User' },
+                },
+            },
         },
         responses: {
             ValidationError: {
@@ -135,6 +159,8 @@ const definition = {
         { name: 'Projects', description: 'Project CRUD' },
         { name: 'Tasks', description: 'Task CRUD, assignment, and status' },
         { name: 'Labels', description: 'Per-project labels and task tagging' },
+        { name: 'Comments', description: 'Task comments' },
+        { name: 'Attachments', description: 'Task file attachments (Supabase Storage)' },
     ],
 };
 

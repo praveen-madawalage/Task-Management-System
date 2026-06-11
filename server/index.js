@@ -15,6 +15,8 @@ const userRoutes = require('./routes/userRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const labelRoutes = require('./routes/labelRoutes');
+const commentRoutes = require('./routes/commentRoutes');
+const attachmentRoutes = require('./routes/attachmentRoutes');
 const { scheduleTokenCleanup } = require('./jobs/tokenCleanup');
 const { scheduleDeadlineReminders } = require('./jobs/deadlineReminders');
 const { initSocket } = require('./sockets/io');
@@ -48,9 +50,11 @@ app.use(cookieParser());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-// Label routes own /projects/:id/labels, /labels/:id, and /tasks/:id/labels.
+// These routers own nested sub-paths (e.g. /tasks/:id/labels, /tasks/:id/comments).
 // Mounted before projects/tasks so those specific sub-paths match here first.
 app.use('/api', labelRoutes);
+app.use('/api', commentRoutes);
+app.use('/api', attachmentRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 

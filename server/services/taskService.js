@@ -133,6 +133,13 @@ const removeAssignee = async (taskId, userId) => {
     if (error) throw error;
 };
 
+// View access mirrors getTask: managers/admins see any task; collaborators only
+// tasks assigned to them. `user` is the decoded JWT payload (userId, role).
+const canUserViewTask = async (user, task) => {
+    if (user.role === 'admin' || user.role === 'project_manager') return true;
+    return isAssignee(task.id, user.userId);
+};
+
 module.exports = {
     createTask,
     findById,
@@ -143,4 +150,5 @@ module.exports = {
     isAssignee,
     addAssignee,
     removeAssignee,
+    canUserViewTask,
 };
