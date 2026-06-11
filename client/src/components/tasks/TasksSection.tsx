@@ -103,9 +103,12 @@ export default function TasksSection({ project }: { project: Project }) {
     }
   };
 
-  const handleRemoveLabel = async (taskId: string, labelId: string) => {
+  // One-click delete from a card removes the label from the project entirely
+  // (the DB cascade also untags it from every task it was on).
+  const handleRemoveLabel = async (_taskId: string, labelId: string) => {
     try {
-      await labelsApi.removeLabelFromTask(taskId, labelId);
+      await labelsApi.deleteLabel(labelId);
+      qc.invalidateQueries({ queryKey: ['labels', project.id] });
       qc.invalidateQueries({ queryKey: ['tasks'] });
     } catch (err) {
       setSnack({ open: true, message: extractError(err), severity: 'error' });
