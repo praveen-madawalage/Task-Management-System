@@ -154,7 +154,14 @@ export default function DashboardPage() {
       {/* Stat cards */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
         {stats.map((s) => (
-          <Card key={s.label} sx={{ p: 2.5 }}>
+          <Card
+            key={s.label}
+            sx={{
+              p: 2.5,
+              transition: 'transform .2s ease, border-color .2s ease',
+              '&:hover': { transform: 'translateY(-3px)', borderColor: COLORS.border2 },
+            }}
+          >
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography sx={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: '.07em', textTransform: 'uppercase', color: COLORS.text3 }}>
                 {s.label}
@@ -189,7 +196,7 @@ export default function DashboardPage() {
                 <Box
                   key={t.id}
                   onClick={() => navigate(`/projects/${t.project_id}`)}
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1.75, p: '14px 20px', borderBottom: `1px solid ${COLORS.border}`, cursor: 'pointer', '&:hover': { bgcolor: 'rgba(255,255,255,0.025)' } }}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1.75, p: '14px 20px', borderBottom: `1px solid ${COLORS.border}`, cursor: 'pointer', transition: 'background .15s ease', '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' } }}
                 >
                   <Box sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: priColor(t.priority), flexShrink: 0 }} />
                   <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -229,7 +236,7 @@ export default function DashboardPage() {
                   <Box
                     key={t.id}
                     onClick={() => navigate(`/projects/${t.project_id}`)}
-                    sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: '13px 20px', borderBottom: `1px solid ${COLORS.border}`, cursor: 'pointer', '&:hover': { bgcolor: 'rgba(255,255,255,0.025)' } }}
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: '13px 20px', borderBottom: `1px solid ${COLORS.border}`, cursor: 'pointer', transition: 'background .15s ease', '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' } }}
                   >
                     <Box sx={{ width: 44, flexShrink: 0, textAlign: 'center', borderRadius: '10px', bgcolor: COLORS.surface2, border: `1px solid ${COLORS.border}`, py: 0.75 }}>
                       <Box sx={{ fontSize: 15, fontWeight: 600, lineHeight: 1 }}>{d.getDate()}</Box>

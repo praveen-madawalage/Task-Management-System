@@ -49,7 +49,15 @@ export default function TaskBoard({
                 ref={provided.innerRef}
                 {...provided.droppableProps}
                 variant="outlined"
-                sx={{ p: 1.5, bgcolor: 'rgba(255,255,255,0.03)', minHeight: 220 }}
+                sx={{
+                  p: 1.5,
+                  minHeight: 220,
+                  bgcolor: 'rgba(22,26,34,0.6)',
+                  // No backdrop blur on the drop containers either — keeps the
+                  // drag repaint cheap.
+                  backdropFilter: 'none',
+                  WebkitBackdropFilter: 'none',
+                }}
               >
                 <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
                   {STATUS_LABELS[status]} ({byStatus(status).length})

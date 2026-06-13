@@ -28,12 +28,17 @@ const PORT = process.env.PORT || 8000;
 // Security headers
 app.use(helmet());
 
-// Rate limiting — applied globally; tighten per-route on auth endpoints
+// Rate limiting — applied globally; tighten per-route on auth endpoints.
+// The ceiling is generous because a single-page app makes many legitimate
+// requests per session (dashboard queries, board refetches, notifications).
+// The strict brute-force limit lives on the login route.
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 1000,
     standardHeaders: true,
     legacyHeaders: false,
+    message: { error: 'Too many requests — please slow down and try again shortly.' },
+    skip: (req) => req.method === 'OPTIONS', // don't count CORS preflight
 });
 app.use(limiter);
 

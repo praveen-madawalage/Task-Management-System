@@ -117,7 +117,18 @@ export default function ProjectsPage() {
           }}
         >
           {(projects ?? []).map((p) => (
-            <Card key={p.id} variant="outlined">
+            <Card
+              key={p.id}
+              variant="outlined"
+              sx={{
+                transition: 'transform .2s ease, border-color .2s ease, box-shadow .2s ease',
+                '&:hover': {
+                  transform: 'translateY(-3px)',
+                  borderColor: 'rgba(255,255,255,0.17)',
+                  boxShadow: '0 12px 30px rgba(0,0,0,0.3)',
+                },
+              }}
+            >
               <CardContent>
                 <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <Typography
