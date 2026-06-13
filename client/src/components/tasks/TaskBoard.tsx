@@ -49,7 +49,7 @@ export default function TaskBoard({
                 ref={provided.innerRef}
                 {...provided.droppableProps}
                 variant="outlined"
-                sx={{ p: 1.5, bgcolor: 'grey.50', minHeight: 220 }}
+                sx={{ p: 1.5, bgcolor: 'rgba(255,255,255,0.03)', minHeight: 220 }}
               >
                 <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
                   {STATUS_LABELS[status]} ({byStatus(status).length})
