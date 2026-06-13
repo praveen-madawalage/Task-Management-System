@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Alert,
   Box,
@@ -80,9 +80,11 @@ export default function TasksSection({ project }: { project: Project }) {
     setFormOpen(true);
   };
   // Clicking a task opens its detail view (comments, attachments) for everyone.
-  const handleOpen = (task: Task) => {
+  // Stable identity (useCallback) keeps the memoized TaskCards from re-rendering
+  // on every drag frame.
+  const handleOpen = useCallback((task: Task) => {
     setDetailTaskId(task.id);
-  };
+  }, []);
 
   const reconcileAssignees = async (taskId: string, current: string[], next: string[]) => {
     for (const id of next.filter((x) => !current.includes(x))) await tasksApi.addAssignee(taskId, id);
@@ -96,29 +98,35 @@ export default function TasksSection({ project }: { project: Project }) {
 
   // Quick inline add from a card: reuse an existing same-named project label or
   // create a new one, then tag the task with it.
-  const handleAddLabel = async (taskId: string, name: string, color: string) => {
-    try {
-      const existing = (projectLabels ?? []).find((l) => l.name.toLowerCase() === name.toLowerCase());
-      const labelId = existing ? existing.id : (await labelsApi.createLabel(project.id, { name, color })).id;
-      await labelsApi.addLabelToTask(taskId, labelId);
-      qc.invalidateQueries({ queryKey: ['labels', project.id] });
-      qc.invalidateQueries({ queryKey: ['tasks'] });
-    } catch (err) {
-      setSnack({ open: true, message: extractError(err), severity: 'error' });
-    }
-  };
+  const handleAddLabel = useCallback(
+    async (taskId: string, name: string, color: string) => {
+      try {
+        const existing = (projectLabels ?? []).find((l) => l.name.toLowerCase() === name.toLowerCase());
+        const labelId = existing ? existing.id : (await labelsApi.createLabel(project.id, { name, color })).id;
+        await labelsApi.addLabelToTask(taskId, labelId);
+        qc.invalidateQueries({ queryKey: ['labels', project.id] });
+        qc.invalidateQueries({ queryKey: ['tasks'] });
+      } catch (err) {
+        setSnack({ open: true, message: extractError(err), severity: 'error' });
+      }
+    },
+    [projectLabels, project.id, qc],
+  );
 
   // One-click delete from a card removes the label from the project entirely
   // (the DB cascade also untags it from every task it was on).
-  const handleRemoveLabel = async (_taskId: string, labelId: string) => {
-    try {
-      await labelsApi.deleteLabel(labelId);
-      qc.invalidateQueries({ queryKey: ['labels', project.id] });
-      qc.invalidateQueries({ queryKey: ['tasks'] });
-    } catch (err) {
-      setSnack({ open: true, message: extractError(err), severity: 'error' });
-    }
-  };
+  const handleRemoveLabel = useCallback(
+    async (_taskId: string, labelId: string) => {
+      try {
+        await labelsApi.deleteLabel(labelId);
+        qc.invalidateQueries({ queryKey: ['labels', project.id] });
+        qc.invalidateQueries({ queryKey: ['tasks'] });
+      } catch (err) {
+        setSnack({ open: true, message: extractError(err), severity: 'error' });
+      }
+    },
+    [project.id, qc],
+  );
 
   const handleSubmit = async (values: TaskFormValues) => {
     setFormError(null);

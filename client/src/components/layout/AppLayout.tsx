@@ -41,9 +41,11 @@ export default function AppLayout() {
             <Button color="inherit" component={RouterLink} to="/projects">
               Projects
             </Button>
-            <Button color="inherit" component={RouterLink} to="/tasks">
-              Tasks
-            </Button>
+            <RoleGate roles={['project_manager', 'collaborator']}>
+              <Button color="inherit" component={RouterLink} to="/tasks">
+                Tasks
+              </Button>
+            </RoleGate>
             <RoleGate roles={['admin']}>
               <Button color="inherit" component={RouterLink} to="/users">
                 Users

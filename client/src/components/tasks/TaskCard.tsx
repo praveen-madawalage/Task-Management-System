@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Avatar, AvatarGroup, Box, Card, CardContent, Chip, Stack, Typography } from '@mui/material';
 import type { Task } from '../../types';
 import { PRIORITY_COLOR, PRIORITY_LABELS } from '../../constants';
@@ -8,15 +9,15 @@ interface TaskCardProps {
   canManageLabels: boolean;
   onAddLabel: (taskId: string, name: string, color: string) => void;
   onRemoveLabel: (taskId: string, labelId: string) => void;
-  onClick: () => void;
+  onOpen: (task: Task) => void;
 }
 
-export default function TaskCard({ task, canManageLabels, onAddLabel, onRemoveLabel, onClick }: TaskCardProps) {
+function TaskCard({ task, canManageLabels, onAddLabel, onRemoveLabel, onOpen }: TaskCardProps) {
   const overdue =
     task.due_date != null && new Date(task.due_date) < new Date() && task.status !== 'completed';
 
   return (
-    <Card variant="outlined" onClick={onClick} sx={{ cursor: 'pointer', '&:hover': { boxShadow: 2 } }}>
+    <Card variant="outlined" onClick={() => onOpen(task)} sx={{ cursor: 'pointer', '&:hover': { boxShadow: 2 } }}>
       <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
         {/* Top row: quick add-label control (left) + label "bookmarks" (right). */}
         <Stack
@@ -72,3 +73,7 @@ export default function TaskCard({ task, canManageLabels, onAddLabel, onRemoveLa
     </Card>
   );
 }
+
+// Memoized so dnd's per-frame re-renders during a drag don't re-render every
+// card — only the card whose data actually changed.
+export default memo(TaskCard);

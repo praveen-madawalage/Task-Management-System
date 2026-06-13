@@ -69,7 +69,7 @@ export default function TaskBoard({
                             canManageLabels={canManageLabels}
                             onAddLabel={onAddLabel}
                             onRemoveLabel={onRemoveLabel}
-                            onClick={() => onOpen(task)}
+                            onOpen={onOpen}
                           />
                         </Box>
                       )}

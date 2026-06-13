@@ -117,10 +117,18 @@ export default function UsersPage() {
     }
   };
 
+  // The signed-in admin manages everyone else; they don't appear in their own list.
+  const visibleUsers = (users ?? []).filter((u) => u.id !== currentUser?.id);
+
   return (
     <Box>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">Users</Typography>
+        <Box>
+          <Typography variant="h4">Users</Typography>
+          <Typography variant="body2" color="text.secondary">
+            Signed in as {currentUser?.name} ({currentUser?.role})
+          </Typography>
+        </Box>
         <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
           New user
         </Button>
@@ -182,7 +190,7 @@ export default function UsersPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {(users ?? []).map((u) => {
+              {visibleUsers.map((u) => {
                 const isSelf = u.id === currentUser?.id;
                 return (
                   <TableRow key={u.id} hover>
@@ -218,10 +226,10 @@ export default function UsersPage() {
                   </TableRow>
                 );
               })}
-              {!isLoading && (users ?? []).length === 0 && (
+              {!isLoading && visibleUsers.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                    No users match the current filters.
+                    No other users match the current filters.
                   </TableCell>
                 </TableRow>
               )}
