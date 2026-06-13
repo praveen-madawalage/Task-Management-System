@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import type { Label, Task, TaskPriority, TaskStatus } from '../../types';
-import { PRIORITIES, PRIORITY_LABELS, STATUS_LABELS, STATUSES } from '../../constants';
+import { PRIORITIES, PRIORITY_LABELS, ROLE_LABELS, STATUS_LABELS, STATUSES } from '../../constants';
 import { useAssignableUsers } from '../../hooks/useUsers';
 
 export interface TaskFormValues {
@@ -174,7 +174,7 @@ export default function TaskFormDialog({
               >
                 {(users ?? []).map((u) => (
                   <MenuItem key={u.id} value={u.id}>
-                    {u.name} ({u.email})
+                    {u.name} · {ROLE_LABELS[u.role]}
                   </MenuItem>
                 ))}
               </Select>

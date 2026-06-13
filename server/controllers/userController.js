@@ -51,7 +51,7 @@ const createUser = async (req, res) => {
 
 const listAssignable = async (req, res) => {
     try {
-        const users = await userService.listAssignable();
+        const users = await userService.listAssignable(req.user.userId);
         res.json({ users });
     } catch (err) {
         console.error('List assignable users failed:', err.message);

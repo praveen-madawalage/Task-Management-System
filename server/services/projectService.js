@@ -2,11 +2,15 @@ const supabase = require('../utils/supabaseClient');
 
 const PROJECT_FIELDS = 'id, title, description, created_by, created_at, updated_at';
 
+// Includes the creator (projects.created_by -> users) so every client can show
+// who made the project. There's a single FK to users, so the embed is unambiguous.
+const PROJECT_SELECT = `${PROJECT_FIELDS}, creator:users ( id, name, email )`;
+
 const createProject = async ({ title, description, createdBy }) => {
     const { data, error } = await supabase
         .from('projects')
         .insert({ title, description, created_by: createdBy })
-        .select(PROJECT_FIELDS)
+        .select(PROJECT_SELECT)
         .single();
 
     if (error) throw error;
@@ -16,7 +20,7 @@ const createProject = async ({ title, description, createdBy }) => {
 const findById = async (id) => {
     const { data, error } = await supabase
         .from('projects')
-        .select(PROJECT_FIELDS)
+        .select(PROJECT_SELECT)
         .eq('id', id)
         .single();
 
@@ -28,7 +32,7 @@ const findById = async (id) => {
 const listAll = async () => {
     const { data, error } = await supabase
         .from('projects')
-        .select(PROJECT_FIELDS)
+        .select(PROJECT_SELECT)
         .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -57,7 +61,7 @@ const listForCollaborator = async (userId) => {
 
     const { data: projects, error: pErr } = await supabase
         .from('projects')
-        .select(PROJECT_FIELDS)
+        .select(PROJECT_SELECT)
         .in('id', projectIds)
         .order('created_at', { ascending: false });
     if (pErr) throw pErr;
@@ -92,7 +96,7 @@ const updateProject = async (id, fields) => {
         .from('projects')
         .update({ ...fields, updated_at: new Date() })
         .eq('id', id)
-        .select(PROJECT_FIELDS)
+        .select(PROJECT_SELECT)
         .single();
 
     if (error) throw error;

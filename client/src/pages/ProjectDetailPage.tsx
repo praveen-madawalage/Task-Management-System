@@ -57,7 +57,7 @@ export default function ProjectDetailPage() {
           {project.description || 'No description'}
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-          Created {new Date(project.created_at).toLocaleString()}
+          Created by {project.creator?.name ?? 'Unknown'} · {new Date(project.created_at).toLocaleString()}
         </Typography>
       </Paper>
 

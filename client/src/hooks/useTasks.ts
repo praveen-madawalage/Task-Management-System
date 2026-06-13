@@ -9,6 +9,13 @@ export const useProjectTasks = (projectId: string) =>
     queryFn: () => tasksApi.listTasks({ projectId }),
   });
 
+// Tasks assigned to the current user across all projects.
+export const useMyTasks = () =>
+  useQuery({
+    queryKey: ['tasks', 'mine'],
+    queryFn: () => tasksApi.listTasks({ assignedTo: 'me' }),
+  });
+
 export const useCreateTask = () => {
   const qc = useQueryClient();
   return useMutation({

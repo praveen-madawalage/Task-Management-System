@@ -21,13 +21,15 @@ const isManagerOrAdmin = (role) => role === 'admin' || role === 'project_manager
 const canManageProject = (req, project) =>
     req.user.role === 'admin' || project.created_by === req.user.userId;
 
-// Validates that every id refers to an existing, active collaborator. Admins and
-// project managers are not assignable. Returns the ids that are invalid.
+// Validates that every id refers to an existing, active collaborator or project
+// manager. Admins are not assignable. Returns the ids that are invalid.
+const isAssignableRole = (role) => role === 'collaborator' || role === 'project_manager';
+
 const findInvalidAssignees = async (userIds) => {
     const invalid = [];
     for (const id of userIds) {
         const user = await userService.findById(id);
-        if (!user || !user.is_active || user.role !== 'collaborator') invalid.push(id);
+        if (!user || !user.is_active || !isAssignableRole(user.role)) invalid.push(id);
     }
     return invalid;
 };
@@ -90,7 +92,7 @@ const createTask = async (req, res) => {
         if (Array.isArray(assigneeIds) && assigneeIds.length > 0) {
             const invalid = await findInvalidAssignees(assigneeIds);
             if (invalid.length > 0) {
-                return res.status(400).json({ error: 'Assignees must be active collaborators', invalid });
+                return res.status(400).json({ error: 'Assignees must be active collaborators or project managers', invalid });
             }
         }
 
@@ -283,8 +285,8 @@ const addAssignee = async (req, res) => {
         if (!task) return;
 
         const user = await userService.findById(userId);
-        if (!user || !user.is_active || user.role !== 'collaborator') {
-            return res.status(400).json({ error: 'Only active collaborators can be assigned to tasks' });
+        if (!user || !user.is_active || !isAssignableRole(user.role)) {
+            return res.status(400).json({ error: 'Only active collaborators or project managers can be assigned to tasks' });
         }
 
         if (await taskService.isAssignee(task.id, userId)) {

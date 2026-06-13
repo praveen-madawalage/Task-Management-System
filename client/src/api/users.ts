@@ -39,7 +39,7 @@ export const updateUser = (id: string, input: UpdateUserInput) =>
 export const setUserStatus = (id: string, isActive: boolean) =>
   api.patch<{ user: User }>(`/api/users/${id}/status`, { isActive }).then((r) => r.data.user);
 
-export type AssignableUser = Pick<User, 'id' | 'name' | 'email'>;
+export type AssignableUser = Pick<User, 'id' | 'name' | 'email' | 'role'>;
 
 // Available to admins and project managers (for assignee pickers).
 export const listAssignableUsers = () =>

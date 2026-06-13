@@ -19,7 +19,7 @@ const ROLES = ['admin', 'project_manager', 'collaborator'];
  * /api/users/assignable:
  *   get:
  *     tags: [Users]
- *     summary: List active collaborators eligible as task assignees (admin or project manager)
+ *     summary: List active collaborators and project managers eligible as task assignees (excludes the caller)
  *     responses:
  *       200:
  *         description: Minimal active-user list
@@ -36,6 +36,7 @@ const ROLES = ['admin', 'project_manager', 'collaborator'];
  *                       id: { type: string, format: uuid }
  *                       name: { type: string }
  *                       email: { type: string }
+ *                       role: { type: string, enum: [collaborator, project_manager] }
  *       403: { $ref: '#/components/responses/Forbidden' }
  */
 // Defined before the admin-only guard below so project managers can reach it.

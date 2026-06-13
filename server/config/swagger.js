@@ -61,6 +61,15 @@ const definition = {
                     created_by: { type: 'string', format: 'uuid' },
                     created_at: { type: 'string', format: 'date-time' },
                     updated_at: { type: 'string', format: 'date-time' },
+                    creator: {
+                        type: 'object',
+                        nullable: true,
+                        properties: {
+                            id: { type: 'string', format: 'uuid' },
+                            name: { type: 'string' },
+                            email: { type: 'string' },
+                        },
+                    },
                 },
             },
             Task: {

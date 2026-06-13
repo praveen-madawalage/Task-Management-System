@@ -156,8 +156,8 @@ export default function ProjectsPage() {
                 >
                   {p.description || 'No description'}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Created {new Date(p.created_at).toLocaleDateString()}
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                  Created by {p.creator?.name ?? 'Unknown'} · {new Date(p.created_at).toLocaleDateString()}
                 </Typography>
               </CardContent>
             </Card>

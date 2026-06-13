@@ -72,14 +72,15 @@ const listUsers = async ({ search, role, isActive }) => {
     return data;
 };
 
-// Minimal list of users eligible to be task assignees. Only active collaborators
-// are assignable — admins and project managers are never task assignees.
-const listAssignable = async () => {
+// Users eligible to be task assignees: active collaborators and project managers
+// (never admins). The requesting user is excluded so they can't assign themselves.
+const listAssignable = async (excludeUserId) => {
     const { data, error } = await supabase
         .from('users')
-        .select('id, name, email')
+        .select('id, name, email, role')
         .eq('is_active', true)
-        .eq('role', 'collaborator')
+        .in('role', ['collaborator', 'project_manager'])
+        .neq('id', excludeUserId)
         .order('name', { ascending: true });
 
     if (error) throw error;

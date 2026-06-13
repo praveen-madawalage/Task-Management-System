@@ -14,6 +14,12 @@ export interface User {
 export type TaskPriority = 'low' | 'medium' | 'high';
 export type TaskStatus = 'todo' | 'in_progress' | 'completed';
 
+export interface ProjectCreator {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -21,6 +27,7 @@ export interface Project {
   created_by: string;
   created_at: string;
   updated_at: string;
+  creator?: ProjectCreator | null;
 }
 
 export interface Label {
