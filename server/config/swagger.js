@@ -70,6 +70,8 @@ const definition = {
                             email: { type: 'string' },
                         },
                     },
+                    task_count: { type: 'integer', description: 'Total tasks (list endpoints only)' },
+                    completed_count: { type: 'integer', description: 'Completed tasks (list endpoints only)' },
                 },
             },
             Task: {

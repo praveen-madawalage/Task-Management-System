@@ -28,6 +28,8 @@ export interface Project {
   created_at: string;
   updated_at: string;
   creator?: ProjectCreator | null;
+  task_count?: number;
+  completed_count?: number;
 }
 
 export interface Label {

@@ -6,6 +6,32 @@ const PROJECT_FIELDS = 'id, title, description, created_by, created_at, updated_
 // who made the project. There's a single FK to users, so the embed is unambiguous.
 const PROJECT_SELECT = `${PROJECT_FIELDS}, creator:users ( id, name, email )`;
 
+// Attaches per-project task_count + completed_count (one extra query for the
+// whole set) so the projects list can show totals and a completion bar.
+const attachTaskStats = async (projects) => {
+    if (!projects || projects.length === 0) return projects || [];
+
+    const ids = projects.map((p) => p.id);
+    const { data: tasks, error } = await supabase
+        .from('tasks')
+        .select('project_id, status')
+        .in('project_id', ids);
+    if (error) throw error;
+
+    const counts = new Map();
+    (tasks || []).forEach((t) => {
+        const c = counts.get(t.project_id) || { total: 0, done: 0 };
+        c.total += 1;
+        if (t.status === 'completed') c.done += 1;
+        counts.set(t.project_id, c);
+    });
+
+    return projects.map((p) => {
+        const c = counts.get(p.id) || { total: 0, done: 0 };
+        return { ...p, task_count: c.total, completed_count: c.done };
+    });
+};
+
 const createProject = async ({ title, description, createdBy }) => {
     const { data, error } = await supabase
         .from('projects')
@@ -36,7 +62,7 @@ const listAll = async () => {
         .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+    return attachTaskStats(data);
 };
 
 // Collaborators only see projects that contain a task assigned to them.
@@ -66,7 +92,7 @@ const listForCollaborator = async (userId) => {
         .order('created_at', { ascending: false });
     if (pErr) throw pErr;
 
-    return projects;
+    return attachTaskStats(projects);
 };
 
 // Whether a collaborator has any assigned task within the given project.
