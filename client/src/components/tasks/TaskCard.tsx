@@ -22,14 +22,13 @@ function TaskCard({ task, canManageLabels, onAddLabel, onRemoveLabel, onOpen }: 
       onClick={() => onOpen(task)}
       sx={{
         cursor: 'pointer',
-        // Solid (no backdrop blur): glass is far too expensive to repaint on
-        // every frame while the card is dragged, and renders incorrectly under
-        // a transform. Keeps drag smooth and visually correct.
-        backgroundColor: '#1b202a',
+        // Flat charcoal (Framer surface-2). No backdrop blur — also keeps drag
+        // repaints cheap and visually correct under a transform.
+        backgroundColor: '#1c1c1c',
         backdropFilter: 'none',
         WebkitBackdropFilter: 'none',
         transition: 'border-color .15s, box-shadow .15s',
-        '&:hover': { borderColor: 'rgba(255,255,255,0.17)', boxShadow: '0 8px 22px rgba(0,0,0,0.3)' },
+        '&:hover': { borderColor: '#333333', boxShadow: '0 8px 22px rgba(0,0,0,0.35)' },
       }}
     >
       <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>

@@ -141,14 +141,56 @@ export default function DashboardPage() {
   );
   const activity = (notifData?.notifications ?? []).slice(0, 6);
 
+  // Gradient spotlight banner content (role-specific).
+  const myProjectCount = (projects ?? []).filter((p) => p.created_by === user?.id).length;
+  let ctaLabel = 'View my tasks';
+  let ctaTo = '/tasks';
+  let bannerSummary = `${tasks.length} tasks assigned · ${dueSoon} due this week.`;
+  if (isAdmin) {
+    ctaLabel = 'Manage users';
+    ctaTo = '/users';
+    bannerSummary = 'An overview of your whole workspace at a glance.';
+  } else if (isPM) {
+    ctaLabel = 'Go to projects';
+    ctaTo = '/projects';
+    bannerSummary = `${myProjectCount} projects you manage · ${inProgress} tasks in progress.`;
+  }
+
   return (
     <Box>
-      {/* Page header */}
-      <Box sx={{ mb: 3.5 }}>
-        <Typography sx={{ fontSize: 24, fontWeight: 600, letterSpacing: '-.02em' }}>Dashboard</Typography>
-        <Typography sx={{ fontSize: 13, color: COLORS.text3, mt: 0.5 }}>
-          Welcome back, {user?.name}
-        </Typography>
+      {/* Gradient spotlight banner — the signature Framer atmosphere card */}
+      <Box
+        sx={{
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: '24px',
+          p: { xs: 3, md: 4 },
+          mb: 3,
+          color: '#fff',
+          background: `linear-gradient(135deg, ${COLORS.gradientViolet}, ${COLORS.gradientMagenta})`,
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -80,
+            right: -40,
+            width: 260,
+            height: 260,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle at 40% 40%, rgba(255,255,255,0.35), transparent 70%)',
+            pointerEvents: 'none',
+          }}
+        />
+        <Box sx={{ position: 'relative' }}>
+          <Typography variant="h4" sx={{ fontWeight: 600 }}>
+            Welcome back, {user?.name}
+          </Typography>
+          <Typography sx={{ mt: 1, maxWidth: 540, opacity: 0.92 }}>{bannerSummary}</Typography>
+          <Button variant="contained" onClick={() => navigate(ctaTo)} sx={{ mt: 2.5 }}>
+            {ctaLabel}
+          </Button>
+        </Box>
       </Box>
 
       {/* Stat cards */}

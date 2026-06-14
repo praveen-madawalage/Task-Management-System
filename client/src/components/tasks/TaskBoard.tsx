@@ -52,9 +52,8 @@ export default function TaskBoard({
                 sx={{
                   p: 1.5,
                   minHeight: 220,
-                  bgcolor: 'rgba(22,26,34,0.6)',
-                  // No backdrop blur on the drop containers either — keeps the
-                  // drag repaint cheap.
+                  // Faint lift above the canvas; cards (surface-2) sit above it.
+                  bgcolor: 'rgba(255,255,255,0.02)',
                   backdropFilter: 'none',
                   WebkitBackdropFilter: 'none',
                 }}
