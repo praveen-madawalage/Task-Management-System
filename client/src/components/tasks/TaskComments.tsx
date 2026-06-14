@@ -18,10 +18,11 @@ import { extractError } from '../../utils/error';
 interface TaskCommentsProps {
   taskId: string;
   canManage: boolean;
+  canContribute: boolean;
   currentUserId?: string;
 }
 
-export default function TaskComments({ taskId, canManage, currentUserId }: TaskCommentsProps) {
+export default function TaskComments({ taskId, canManage, canContribute, currentUserId }: TaskCommentsProps) {
   const { data: comments, isLoading } = useTaskComments(taskId, true);
   const addComment = useAddComment(taskId);
   const deleteComment = useDeleteComment(taskId);
@@ -91,20 +92,22 @@ export default function TaskComments({ taskId, canManage, currentUserId }: TaskC
           {error}
         </Typography>
       )}
-      <Box component="form" onSubmit={submit} sx={{ display: 'flex', gap: 1, mt: 1 }}>
-        <TextField
-          size="small"
-          placeholder="Add a comment…"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          fullWidth
-          multiline
-          maxRows={4}
-        />
-        <Button type="submit" variant="contained" disabled={addComment.isPending || !content.trim()}>
-          Post
-        </Button>
-      </Box>
+      {canContribute && (
+        <Box component="form" onSubmit={submit} sx={{ display: 'flex', gap: 1, mt: 1 }}>
+          <TextField
+            size="small"
+            placeholder="Add a comment…"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            fullWidth
+            multiline
+            maxRows={4}
+          />
+          <Button type="submit" variant="contained" disabled={addComment.isPending || !content.trim()}>
+            Post
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 }

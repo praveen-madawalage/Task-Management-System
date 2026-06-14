@@ -1,4 +1,5 @@
 const supabase = require('../utils/supabaseClient');
+const projectService = require('./projectService');
 
 const TASK_FIELDS =
     'id, project_id, created_by, title, description, priority, status, due_date, created_at, updated_at';
@@ -147,9 +148,16 @@ const removeAssignee = async (taskId, userId) => {
     if (error) throw error;
 };
 
-// View access mirrors getTask: managers/admins see any task; collaborators only
-// tasks assigned to them. `user` is the decoded JWT payload (userId, role).
+// VIEW access: managers/admins see any task; collaborators can view any task in
+// a project they participate in (i.e. they're assigned to something in it).
 const canUserViewTask = async (user, task) => {
+    if (user.role === 'admin' || user.role === 'project_manager') return true;
+    return projectService.collaboratorHasAccess(user.userId, task.project_id);
+};
+
+// CONTRIBUTE access (comments/attachments): managers/admins, or a collaborator
+// actually assigned to the task.
+const canUserContributeToTask = async (user, task) => {
     if (user.role === 'admin' || user.role === 'project_manager') return true;
     return isAssignee(task.id, user.userId);
 };
@@ -165,4 +173,5 @@ module.exports = {
     addAssignee,
     removeAssignee,
     canUserViewTask,
+    canUserContributeToTask,
 };

@@ -23,10 +23,11 @@ import { formatBytes, isImageFile } from '../../utils/format';
 interface TaskAttachmentsProps {
   taskId: string;
   canManage: boolean;
+  canContribute: boolean;
   currentUserId?: string;
 }
 
-export default function TaskAttachments({ taskId, canManage, currentUserId }: TaskAttachmentsProps) {
+export default function TaskAttachments({ taskId, canManage, canContribute, currentUserId }: TaskAttachmentsProps) {
   const { data: attachments, isLoading } = useTaskAttachments(taskId, true);
   const upload = useUploadAttachment(taskId);
   const remove = useDeleteAttachment(taskId);
@@ -54,15 +55,19 @@ export default function TaskAttachments({ taskId, canManage, currentUserId }: Ta
     <Box>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="subtitle1">Attachments</Typography>
-        <Button
-          size="small"
-          startIcon={<UploadFileIcon />}
-          onClick={() => fileRef.current?.click()}
-          disabled={upload.isPending}
-        >
-          {upload.isPending ? 'Uploading…' : 'Upload'}
-        </Button>
-        <input ref={fileRef} type="file" hidden onChange={onPick} />
+        {canContribute && (
+          <>
+            <Button
+              size="small"
+              startIcon={<UploadFileIcon />}
+              onClick={() => fileRef.current?.click()}
+              disabled={upload.isPending}
+            >
+              {upload.isPending ? 'Uploading…' : 'Upload'}
+            </Button>
+            <input ref={fileRef} type="file" hidden onChange={onPick} />
+          </>
+        )}
       </Stack>
 
       {error && (

@@ -89,11 +89,14 @@ const createTask = async (req, res) => {
             return res.status(403).json({ error: 'Only the project creator or an admin can add tasks to this project' });
         }
 
-        if (Array.isArray(assigneeIds) && assigneeIds.length > 0) {
-            const invalid = await findInvalidAssignees(assigneeIds);
-            if (invalid.length > 0) {
-                return res.status(400).json({ error: 'Assignees must be active collaborators or project managers', invalid });
-            }
+        // Every task must have at least one assignee.
+        if (!Array.isArray(assigneeIds) || assigneeIds.length === 0) {
+            return res.status(400).json({ error: 'A task must have at least one assignee' });
+        }
+
+        const invalid = await findInvalidAssignees(assigneeIds);
+        if (invalid.length > 0) {
+            return res.status(400).json({ error: 'Assignees must be active collaborators or project managers', invalid });
         }
 
         const task = await taskService.createTask({
@@ -128,15 +131,20 @@ const listTasks = async (req, res) => {
     const sortColumn = sortByMap[req.query.sortBy] || 'created_at';
     const ascending = req.query.order !== 'desc';
 
-    // Collaborators are forced to their own assigned tasks. Managers/admins may
-    // optionally filter by assignee ('me' or a specific user id).
     let assigneeId;
-    if (!isManagerOrAdmin(req.user.role)) {
+    if (isManagerOrAdmin(req.user.role)) {
+        // Managers/admins may optionally filter by assignee ('me' or a user id).
+        if (req.query.assignedTo === 'me') assigneeId = req.user.userId;
+        else if (req.query.assignedTo) assigneeId = req.query.assignedTo;
+    } else if (req.query.projectId) {
+        // Collaborator viewing a project board: show ALL of that project's tasks,
+        // but only if they actually participate in the project.
+        const hasAccess = await projectService.collaboratorHasAccess(req.user.userId, req.query.projectId);
+        if (!hasAccess) return res.json({ tasks: [] });
+        // assigneeId stays undefined -> all tasks in the project
+    } else {
+        // Collaborator's cross-project "My Tasks": only their assigned tasks.
         assigneeId = req.user.userId;
-    } else if (req.query.assignedTo === 'me') {
-        assigneeId = req.user.userId;
-    } else if (req.query.assignedTo) {
-        assigneeId = req.query.assignedTo;
     }
 
     try {
@@ -163,10 +171,10 @@ const getTask = async (req, res) => {
         const task = await taskService.findById(req.params.id);
         if (!task) return res.status(404).json({ error: 'Task not found' });
 
-        // Collaborators may only view tasks assigned to them.
+        // Collaborators may view any task in a project they participate in.
         if (!isManagerOrAdmin(req.user.role)) {
-            const assigned = await taskService.isAssignee(task.id, req.user.userId);
-            if (!assigned) return res.status(403).json({ error: 'You do not have access to this task' });
+            const allowed = await projectService.collaboratorHasAccess(req.user.userId, task.project_id);
+            if (!allowed) return res.status(403).json({ error: 'You do not have access to this task' });
         }
 
         const assignees = await taskService.getAssignees(task.id);

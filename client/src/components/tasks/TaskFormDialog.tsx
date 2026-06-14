@@ -10,16 +10,24 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  FormHelperText,
   InputLabel,
   MenuItem,
   OutlinedInput,
   Select,
   Stack,
   TextField,
+  Typography,
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
+import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import type { Label, Task, TaskPriority, TaskStatus } from '../../types';
 import { PRIORITIES, PRIORITY_LABELS, ROLE_LABELS, STATUS_LABELS, STATUSES } from '../../constants';
+import { COLORS } from '../../theme';
 import { useAssignableUsers } from '../../hooks/useUsers';
 
 export interface TaskFormValues {
@@ -27,7 +35,7 @@ export interface TaskFormValues {
   description: string;
   priority: TaskPriority;
   status: TaskStatus;
-  dueDate: string; // datetime-local value or ''
+  dueDate: string; // ISO string or ''
   assigneeIds: string[];
   labelIds: string[];
 }
@@ -41,14 +49,6 @@ interface TaskFormDialogProps {
   onClose: () => void;
   onSubmit: (values: TaskFormValues) => void;
 }
-
-// ISO string -> value for <input type="datetime-local"> in local time.
-const toLocalInput = (iso: string | null) => {
-  if (!iso) return '';
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-};
 
 export default function TaskFormDialog({
   open,
@@ -66,9 +66,10 @@ export default function TaskFormDialog({
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<TaskPriority>('medium');
   const [status, setStatus] = useState<TaskStatus>('todo');
-  const [dueDate, setDueDate] = useState('');
+  const [dueDate, setDueDate] = useState<Dayjs | null>(null);
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
   const [labelIds, setLabelIds] = useState<string[]>([]);
+  const [assigneeError, setAssigneeError] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -76,20 +77,36 @@ export default function TaskFormDialog({
       setDescription(task?.description ?? '');
       setPriority(task?.priority ?? 'medium');
       setStatus(task?.status ?? 'todo');
-      setDueDate(toLocalInput(task?.due_date ?? null));
+      setDueDate(task?.due_date ? dayjs(task.due_date) : null);
       setAssigneeIds(task?.assignees?.map((a) => a.id) ?? []);
       setLabelIds(task?.labels?.map((l) => l.id) ?? []);
+      setAssigneeError(false);
     }
   }, [open, task]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    onSubmit({ title, description, priority, status, dueDate, assigneeIds, labelIds });
+    // Every task must have at least one assignee — prompt right here if missing.
+    if (assigneeIds.length === 0) {
+      setAssigneeError(true);
+      return;
+    }
+    onSubmit({
+      title,
+      description,
+      priority,
+      status,
+      dueDate: dueDate ? dueDate.endOf('day').toISOString() : '',
+      assigneeIds,
+      labelIds,
+    });
   };
 
   const handleAssignees = (e: SelectChangeEvent<string[]>) => {
     const value = e.target.value;
-    setAssigneeIds(typeof value === 'string' ? value.split(',') : value);
+    const next = typeof value === 'string' ? value.split(',') : value;
+    setAssigneeIds(next);
+    if (next.length > 0) setAssigneeError(false);
   };
 
   const handleLabels = (e: SelectChangeEvent<string[]>) => {
@@ -148,22 +165,16 @@ export default function TaskFormDialog({
                 ))}
               </TextField>
             </Stack>
-            <TextField
-              label="Due date"
-              type="datetime-local"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              fullWidth
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-            <FormControl fullWidth>
-              <InputLabel id="assignees-label">Assignees</InputLabel>
+
+            {/* Assignees — required */}
+            <FormControl fullWidth error={assigneeError}>
+              <InputLabel id="assignees-label">Assignees *</InputLabel>
               <Select
                 labelId="assignees-label"
                 multiple
                 value={assigneeIds}
                 onChange={handleAssignees}
-                input={<OutlinedInput label="Assignees" />}
+                input={<OutlinedInput label="Assignees *" />}
                 renderValue={(selected) => (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {selected.map((id) => (
@@ -178,7 +189,12 @@ export default function TaskFormDialog({
                   </MenuItem>
                 ))}
               </Select>
+              <FormHelperText>
+                {assigneeError ? 'Please assign at least one person to this task.' : 'At least one assignee is required.'}
+              </FormHelperText>
             </FormControl>
+
+            {/* Labels */}
             <FormControl fullWidth disabled={projectLabels.length === 0}>
               <InputLabel id="labels-label">Labels</InputLabel>
               <Select
@@ -192,12 +208,7 @@ export default function TaskFormDialog({
                     {selected.map((id) => {
                       const label = labelById(id);
                       return (
-                        <Chip
-                          key={id}
-                          size="small"
-                          label={label?.name ?? id}
-                          sx={{ bgcolor: label?.color, color: '#fff' }}
-                        />
+                        <Chip key={id} size="small" label={label?.name ?? id} sx={{ bgcolor: label?.color, color: '#fff' }} />
                       );
                     })}
                   </Box>
@@ -210,6 +221,30 @@ export default function TaskFormDialog({
                 ))}
               </Select>
             </FormControl>
+
+            {/* Due date — inline calendar */}
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Due date {dueDate && <Box component="span" sx={{ color: COLORS.text }}>· {dueDate.format('MMM D, YYYY')}</Box>}
+                </Typography>
+                {dueDate && (
+                  <Button size="small" onClick={() => setDueDate(null)}>
+                    Clear
+                  </Button>
+                )}
+              </Box>
+              <Box sx={{ border: `1px solid ${COLORS.border}`, borderRadius: '12px', display: 'flex', justifyContent: 'center' }}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DateCalendar
+                    value={dueDate}
+                    onChange={(v) => setDueDate(v)}
+                    disablePast
+                    sx={{ width: '100%', maxHeight: 320 }}
+                  />
+                </LocalizationProvider>
+              </Box>
+            </Box>
           </Stack>
         </DialogContent>
         <DialogActions>

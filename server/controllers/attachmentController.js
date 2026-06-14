@@ -22,8 +22,8 @@ const addAttachment = async (req, res) => {
     try {
         const task = await taskService.findById(req.params.taskId);
         if (!task) return res.status(404).json({ error: 'Task not found' });
-        if (!(await taskService.canUserViewTask(req.user, task))) {
-            return res.status(403).json({ error: 'You do not have access to this task' });
+        if (!(await taskService.canUserContributeToTask(req.user, task))) {
+            return res.status(403).json({ error: 'You can only upload to tasks assigned to you' });
         }
 
         const attachment = await attachmentService.uploadAttachment(task.id, req.user.userId, req.file);

@@ -35,6 +35,12 @@ export default function TaskDetailDialog({
   onEdit,
   onClose,
 }: TaskDetailDialogProps) {
+  // Comment/upload is allowed for managers/admins or a collaborator assigned to
+  // this task. Everyone with view access can still read them.
+  const canContribute = task
+    ? canManage || (task.assignees?.some((a) => a.id === currentUserId) ?? false)
+    : false;
+
   return (
     <Dialog open={open && task != null} onClose={onClose} fullWidth maxWidth="sm">
       {task && (
@@ -84,10 +90,10 @@ export default function TaskDetailDialog({
             </Stack>
 
             <Divider sx={{ my: 2 }} />
-            <TaskAttachments taskId={task.id} canManage={canManage} currentUserId={currentUserId} />
+            <TaskAttachments taskId={task.id} canManage={canManage} canContribute={canContribute} currentUserId={currentUserId} />
 
             <Divider sx={{ my: 2 }} />
-            <TaskComments taskId={task.id} canManage={canManage} currentUserId={currentUserId} />
+            <TaskComments taskId={task.id} canManage={canManage} canContribute={canContribute} currentUserId={currentUserId} />
           </DialogContent>
           <DialogActions>
             {canManage && (
