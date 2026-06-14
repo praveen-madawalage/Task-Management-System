@@ -109,6 +109,20 @@ const updateUser = async (req, res) => {
 
     try {
         const user = await userService.updateUser(req.params.id, fields);
+
+        // Notify other admins of what changed (name / role).
+        const changes = [];
+        if (existing.name !== user.name) changes.push(`renamed to ${user.name}`);
+        if (existing.role !== user.role) changes.push(`role changed to ${user.role}`);
+        if (changes.length > 0) {
+            notificationService.notifyAdmins(
+                'admin_update',
+                `User ${existing.name} ${changes.join(' and ')}`,
+                null,
+                req.user.userId,
+            );
+        }
+
         res.json({ user });
     } catch (err) {
         console.error('Update user failed:', err.message);
@@ -124,6 +138,15 @@ const setUserStatus = async (req, res) => {
 
     try {
         const user = await userService.setActive(req.params.id, req.body.isActive);
+
+        // Notify other admins of the activation / deactivation.
+        notificationService.notifyAdmins(
+            'admin_update',
+            `User ${user.name} (${user.role}) ${user.is_active ? 'activated' : 'deactivated'}`,
+            null,
+            req.user.userId,
+        );
+
         res.json({ user });
     } catch (err) {
         console.error('Set user status failed:', err.message);
