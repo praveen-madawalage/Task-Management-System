@@ -50,4 +50,12 @@ const getIO = () => {
     return io;
 };
 
-module.exports = { initSocket, getIO };
+// Broadcast that a project's tasks changed (new/edited/moved task, assignee or
+// label change). Clients viewing that project refetch via authenticated REST,
+// so the payload is just the id — no task data is pushed over the wire.
+const emitTasksChanged = (projectId) => {
+    if (!io || !projectId) return;
+    io.emit('tasks:changed', { projectId });
+};
+
+module.exports = { initSocket, getIO, emitTasksChanged };

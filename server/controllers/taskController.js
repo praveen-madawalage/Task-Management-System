@@ -4,6 +4,7 @@ const projectService = require('../services/projectService');
 const userService = require('../services/userService');
 const labelService = require('../services/labelService');
 const notificationService = require('../services/notificationService');
+const { emitTasksChanged } = require('../sockets/io');
 
 const failOnValidation = (req, res) => {
     const errors = validationResult(req);
@@ -117,6 +118,7 @@ const createTask = async (req, res) => {
         }
 
         const assignees = await taskService.getAssignees(task.id);
+        emitTasksChanged(projectId);
         res.status(201).json({ task: { ...task, assignees } });
     } catch (err) {
         console.error('Create task failed:', err.message);
@@ -228,6 +230,7 @@ const updateTask = async (req, res) => {
             await notifyStatusChange(updated, req.user.userId);
         }
         const assignees = await taskService.getAssignees(req.params.id);
+        emitTasksChanged(updated.project_id);
         res.json({ task: { ...updated, assignees } });
     } catch (err) {
         console.error('Update task failed:', err.message);
@@ -261,6 +264,7 @@ const updateStatus = async (req, res) => {
 
         const updated = await taskService.updateTask(req.params.id, { status: req.body.status });
         await notifyStatusChange(updated, req.user.userId);
+        emitTasksChanged(updated.project_id);
         res.json({ task: updated });
     } catch (err) {
         console.error('Update task status failed:', err.message);
@@ -276,6 +280,7 @@ const deleteTask = async (req, res) => {
         if (!task) return;
 
         await taskService.deleteTask(req.params.id);
+        emitTasksChanged(task.project_id);
         res.json({ message: 'Task deleted successfully' });
     } catch (err) {
         console.error('Delete task failed:', err.message);
@@ -304,6 +309,7 @@ const addAssignee = async (req, res) => {
         await taskService.addAssignee(task.id, userId);
         await notifyAssigned(task, [userId], req.user.userId);
         const assignees = await taskService.getAssignees(task.id);
+        emitTasksChanged(task.project_id);
         res.status(201).json({ assignees });
     } catch (err) {
         console.error('Add assignee failed:', err.message);
@@ -320,6 +326,7 @@ const removeAssignee = async (req, res) => {
 
         await taskService.removeAssignee(task.id, req.params.userId);
         const assignees = await taskService.getAssignees(task.id);
+        emitTasksChanged(task.project_id);
         res.json({ assignees });
     } catch (err) {
         console.error('Remove assignee failed:', err.message);

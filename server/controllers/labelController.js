@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator');
 const labelService = require('../services/labelService');
 const projectService = require('../services/projectService');
 const taskService = require('../services/taskService');
+const { emitTasksChanged } = require('../sockets/io');
 
 const failOnValidation = (req, res) => {
     const errors = validationResult(req);
@@ -110,6 +111,7 @@ const updateLabel = async (req, res) => {
         }
 
         const updated = await labelService.updateLabel(label.id, fields);
+        emitTasksChanged(label.project_id);
         res.json({ label: updated });
     } catch (err) {
         console.error('Update label failed:', err.message);
@@ -125,6 +127,7 @@ const deleteLabel = async (req, res) => {
         if (!label) return;
 
         await labelService.deleteLabel(label.id);
+        emitTasksChanged(label.project_id);
         res.json({ message: 'Label deleted successfully' });
     } catch (err) {
         console.error('Delete label failed:', err.message);
@@ -172,6 +175,7 @@ const addLabelToTask = async (req, res) => {
 
         await labelService.addLabelToTask(task.id, labelId);
         const labels = await labelService.getLabelsForTask(task.id);
+        emitTasksChanged(task.project_id);
         res.status(201).json({ labels });
     } catch (err) {
         console.error('Add label to task failed:', err.message);
@@ -188,6 +192,7 @@ const removeLabelFromTask = async (req, res) => {
 
         await labelService.removeLabelFromTask(task.id, req.params.labelId);
         const labels = await labelService.getLabelsForTask(task.id);
+        emitTasksChanged(task.project_id);
         res.json({ labels });
     } catch (err) {
         console.error('Remove label from task failed:', err.message);

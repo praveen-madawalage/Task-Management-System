@@ -37,9 +37,19 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     socket.on('notification', refresh);
     socket.on('notifications:pending', refresh);
 
+    // A project's tasks changed somewhere (new/edited task, status move, assignee
+    // or label change). Refresh task lists + project cards; only currently-mounted
+    // queries actually refetch, so this is cheap if you're not viewing it.
+    const onTasksChanged = () => {
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+      qc.invalidateQueries({ queryKey: ['projects'] });
+    };
+    socket.on('tasks:changed', onTasksChanged);
+
     return () => {
       socket.off('notification', refresh);
       socket.off('notifications:pending', refresh);
+      socket.off('tasks:changed', onTasksChanged);
       socket.disconnect();
       socketRef.current = null;
     };
