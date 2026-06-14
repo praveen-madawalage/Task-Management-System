@@ -90,6 +90,29 @@ const markAllRead = async (userId) => {
     if (error) throw error;
 };
 
+// Notify every active admin (used for admin_update events: admin sign-ins, new
+// users, new projects). `excludeUserId` skips the actor so they don't get
+// notified of their own action.
+const notifyAdmins = async (type, message, taskId = null, excludeUserId = null) => {
+    try {
+        const { data: admins, error } = await supabase
+            .from('users')
+            .select('id')
+            .eq('role', 'admin')
+            .eq('is_active', true);
+        if (error) {
+            console.error('notifyAdmins lookup failed:', error.message);
+            return;
+        }
+        for (const a of admins || []) {
+            if (a.id === excludeUserId) continue;
+            await notify(a.id, type, message, taskId);
+        }
+    } catch (err) {
+        console.error('notifyAdmins failed:', err.message);
+    }
+};
+
 // On (re)connection, push every not-yet-delivered notification, then mark them
 // delivered.
 const deliverPending = async (userId) => {
@@ -108,6 +131,7 @@ const deliverPending = async (userId) => {
 
 module.exports = {
     notify,
+    notifyAdmins,
     deliverPending,
     markDelivered,
     listForUser,

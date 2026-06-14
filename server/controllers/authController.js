@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const authService = require('../services/authService');
+const notificationService = require('../services/notificationService');
 
 const REFRESH_COOKIE = 'refresh_token';
 
@@ -37,6 +38,11 @@ const login = async (req, res) => {
     await authService.saveRefreshToken(user.id, refreshToken);
 
     res.cookie(REFRESH_COOKIE, refreshToken, cookieOptions());
+
+    // Let other admins know when an admin signs in (fire-and-forget).
+    if (user.role === 'admin') {
+        notificationService.notifyAdmins('admin_update', `${user.name} (admin) signed in`, null, user.id);
+    }
 
     res.json({
         accessToken,

@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const projectService = require('../services/projectService');
+const notificationService = require('../services/notificationService');
 
 const failOnValidation = (req, res) => {
     const errors = validationResult(req);
@@ -23,6 +24,15 @@ const createProject = async (req, res) => {
             description,
             createdBy: req.user.userId,
         });
+
+        // Notify admins of the new project (fire-and-forget).
+        notificationService.notifyAdmins(
+            'admin_update',
+            `New project "${project.title}" created by ${project.creator?.name ?? 'someone'}`,
+            null,
+            req.user.userId,
+        );
+
         res.status(201).json({ project });
     } catch (err) {
         console.error('Create project failed:', err.message);

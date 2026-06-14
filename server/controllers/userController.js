@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const userService = require('../services/userService');
+const notificationService = require('../services/notificationService');
 const { sendOnboardingEmail } = require('../utils/emailService');
 
 const failOnValidation = (req, res) => {
@@ -39,6 +40,14 @@ const createUser = async (req, res) => {
         console.error(`Onboarding email failed for ${result.user.email}:`, err.message);
         console.error(`Temporary password for ${result.user.email}: ${result.tempPassword}`);
     }
+
+    // Notify other admins of the new account (fire-and-forget).
+    notificationService.notifyAdmins(
+        'admin_update',
+        `New user created: ${result.user.name} (${result.user.role})`,
+        null,
+        req.user.userId,
+    );
 
     res.status(201).json({
         user: result.user,

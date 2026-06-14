@@ -62,13 +62,15 @@ export default function TasksPage() {
               {projectName.get(projectId) ?? 'Project'}
             </Typography>
             <TableContainer component={Paper} variant="outlined">
-              <Table>
+              {/* Fixed layout + explicit column widths keep every project's
+                  table perfectly aligned with the others. */}
+              <Table sx={{ tableLayout: 'fixed', width: '100%' }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Task</TableCell>
-                    <TableCell>Priority</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Due</TableCell>
+                    <TableCell sx={{ width: '52%' }}>Task</TableCell>
+                    <TableCell sx={{ width: '16%' }}>Priority</TableCell>
+                    <TableCell sx={{ width: '16%' }}>Status</TableCell>
+                    <TableCell sx={{ width: '16%' }}>Due</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -82,7 +84,9 @@ export default function TasksPage() {
                         sx={{ cursor: 'pointer' }}
                         onClick={() => navigate(`/projects/${projectId}`)}
                       >
-                        <TableCell>{t.title}</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {t.title}
+                        </TableCell>
                         <TableCell>
                           <Chip size="small" label={PRIORITY_LABELS[t.priority]} color={PRIORITY_COLOR[t.priority]} />
                         </TableCell>

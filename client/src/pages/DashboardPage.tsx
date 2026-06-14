@@ -158,7 +158,8 @@ export default function DashboardPage() {
 
   return (
     <Box>
-      {/* Gradient spotlight banner — the signature Framer atmosphere card */}
+      {/* Welcome banner — dark surface matching the theme, username highlighted
+          in the accent blue against the white 'Welcome back,' text. */}
       <Box
         sx={{
           position: 'relative',
@@ -166,27 +167,27 @@ export default function DashboardPage() {
           borderRadius: '24px',
           p: { xs: 3, md: 4 },
           mb: 3,
-          color: '#fff',
-          background: `linear-gradient(135deg, ${COLORS.gradientViolet}, ${COLORS.gradientMagenta})`,
+          border: `1px solid ${COLORS.border}`,
+          background: `linear-gradient(135deg, ${COLORS.surface}, ${COLORS.canvas})`,
         }}
       >
         <Box
           sx={{
             position: 'absolute',
-            top: -80,
-            right: -40,
-            width: 260,
-            height: 260,
+            top: -90,
+            right: -50,
+            width: 280,
+            height: 280,
             borderRadius: '50%',
-            background: 'radial-gradient(circle at 40% 40%, rgba(255,255,255,0.35), transparent 70%)',
+            background: `radial-gradient(circle at 40% 40%, ${COLORS.accentSoft}, transparent 70%)`,
             pointerEvents: 'none',
           }}
         />
         <Box sx={{ position: 'relative' }}>
-          <Typography variant="h4" sx={{ fontWeight: 600 }}>
-            Welcome back, {user?.name}
+          <Typography variant="h4" sx={{ fontWeight: 600, color: COLORS.text }}>
+            Welcome back, <Box component="span" sx={{ color: COLORS.accent }}>{user?.name}</Box>
           </Typography>
-          <Typography sx={{ mt: 1, maxWidth: 540, opacity: 0.92 }}>{bannerSummary}</Typography>
+          <Typography sx={{ mt: 1, maxWidth: 540, color: COLORS.text2 }}>{bannerSummary}</Typography>
           <Button variant="contained" onClick={() => navigate(ctaTo)} sx={{ mt: 2.5 }}>
             {ctaLabel}
           </Button>
